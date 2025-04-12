@@ -20,3 +20,39 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+.modal-xl {
+    max-width: 60%;
+}
+
+.modal-content {
+    border-radius: 0.5rem;
+}
+
+.modal-backdrop {
+    opacity: 0.8 !important;
+}
+
+.modal-body {
+    padding: 2rem;
+}
+.toast {
+    opacity: 1 !important;
+}
+
+/* Делаем цвет фона уведомления об ошибке (или удалении) заметно красным */
+.toast-error {
+    background-color: #c0392b !important; /* Ярко-красный фон */
+    color: #fff !important; /* Белый текст */
+}
+.product-thumbnail {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.img-thumbnail {
+    max-width: 100%;
+    object-fit: contain;
+}

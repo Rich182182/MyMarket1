@@ -1,0 +1,15 @@
+﻿/* Стили для контейнера выбора количества записей */
+.dataTables_wrapper .dataTables_length {
+    margin-bottom: 10px; /* Отступ снизу */
+}
+
+    /* Стили для выпадающего списка */
+    .dataTables_wrapper .dataTables_length select {
+        background-color: #303030; /* Цвет фона */
+        color: white !important; /* Цвет текста */
+        border: 1px solid #AAAAAA; /* Цвет границы */
+        border-radius: 4px; /* Скругление углов */
+        padding: 5px; /* Внутренний отступ */
+        width: auto; /* Автоматическая ширина */
+        display: inline-block; /* Отображение в строку */
+    }
