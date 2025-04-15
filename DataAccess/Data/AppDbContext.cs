@@ -9,15 +9,16 @@ namespace DataAccess.Data
         }
         public DbSet<Category> Categories { get; set; }
         public DbSet<Product> Products { get; set; }
+        public DbSet<ProductImage> ProductImages { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            
-            /*modelBuilder.Entity<Product>()
-                .HasOne(p => p.Category)
-                .WithMany()
-                .HasForeignKey(p => p.CategoryId)
-                .OnDelete(DeleteBehavior.Restrict);*/
+
+            modelBuilder.Entity<ProductImage>()
+                .HasOne(pi => pi.Product)
+                .WithMany(p => p.Images)
+                .HasForeignKey(pi => pi.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Category>().HasData(
                 new Category { Id = 1, Name = "Dairy" },

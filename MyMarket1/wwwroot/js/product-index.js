@@ -1,6 +1,7 @@
 ﻿$(document).ready(function () {
     // Initialize DataTable
     var dataTable = $('#productsTable').DataTable({
+        // DataTable configuration (keep your existing config)
         pageLength: 10,
         lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, "all"]],
         "oLanguage": {
@@ -25,7 +26,7 @@
                         '<button type="button" class="btn btn-warning edit-product" ' +
                         'data-id="' + data.id + '" data-name="' + data.name + '" ' +
                         'data-price="' + data.price + '" data-description="' + (data.description || '') + '" ' +
-                        'data-category-id="' + data.categoryId + '" data-image-url="' + (data.imageUrl || '') + '">' +
+                        'data-category-id="' + data.categoryId + '">' +
                         '<i class="bi bi-pencil-square me-1"></i>Edit</button>' +
                         '<button type="button" class="btn btn-danger delete-product" ' +
                         'data-id="' + data.id + '" data-name="' + data.name + '" ' +
@@ -37,36 +38,129 @@
         ]
     });
 
+    // Pending images for new product
+    let pendingImages = [];
+
+    // Images to delete for edit form
+    let imagesToDelete = [];
+
     // Load products via AJAX when page loads
     loadProducts();
 
     // Load categories for dropdowns
     loadCategories();
 
-    // Modal form focus
-    $('.modal').on('shown.bs.modal', function () {
-        $(this).find('input[type="text"]').trigger('focus');
-    });
+    // PRODUCT CREATION
+    // ----------------
 
     // Create product form submission
     $('#createProductForm').on('submit', function (e) {
         e.preventDefault();
+
+        // Create product first
         $.ajax({
             url: '/Product/Create',
             type: "POST",
             data: $(this).serialize(),
             dataType: 'json',
             success: function (response) {
-                $('#createProductModal').modal('hide');
-                resetCreateForm();
-                toastr.success("Product created successfully!");
-                loadProducts(); // Reload the products table
+                const productId = response.id;
+
+                // If there are images, upload them
+                if (pendingImages.length > 0) {
+                    uploadPendingImages(productId);
+                } else {
+                    finishCreateProduct();
+                }
             },
             error: function (xhr) {
-                toastr.error("Error while creating product: " + xhr.responseText);
+                toastr.error("Error creating product: " + xhr.responseText);
             }
         });
     });
+
+    // Function to upload images after creating a product
+    function uploadPendingImages(productId) {
+        const formData = new FormData();
+
+        // Add all pending images to FormData
+        for (let i = 0; i < pendingImages.length; i++) {
+            formData.append('files', pendingImages[i]);
+        }
+
+        $.ajax({
+            url: `/Product/UploadImages?productId=${productId}`,
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function () {
+                finishCreateProduct();
+            },
+            error: function (xhr) {
+                toastr.error("Error uploading images: " + xhr.responseText);
+            }
+        });
+    }
+
+    function finishCreateProduct() {
+        $('#createProductModal').modal('hide');
+        resetCreateForm();
+        toastr.success("Product created successfully!");
+        loadProducts();
+    }
+
+    // Handle file selection for create form
+    $('#createProductImageUpload').on('change', function () {
+        const fileInput = this;
+        if (fileInput.files.length === 0) return;
+
+        // Check if adding these files would exceed the 8 image limit
+        const currentPreviewCount = $('#createProductImagePreview .col-4').length;
+        if (currentPreviewCount + fileInput.files.length > 8) {
+            toastr.warning(`You can only add up to 8 images (${8 - currentPreviewCount} more).`);
+            fileInput.value = '';
+            return;
+        }
+
+        // Process each selected file
+        for (let i = 0; i < fileInput.files.length; i++) {
+            const file = fileInput.files[i];
+            const tempId = `temp-${Date.now()}-${i}`;
+
+            // Add to pending images
+            pendingImages.push(file);
+
+            // Create preview
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                $('#createProductImagePreview').append(`
+                    <div class="col-4 col-md-3" data-temp-id="${tempId}">
+                        <div class="product-image-container">
+                            <img src="${e.target.result}" class="product-image border" alt="Product Image">
+                            <div class="delete-image-btn" data-temp-id="${tempId}">
+                                <i class="bi bi-x"></i>
+                            </div>
+                        </div>
+                    </div>
+                `);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Reset file input
+        fileInput.value = '';
+    });
+
+    // Delete pending image (create form)
+    $(document).on('click', '#createProductImagePreview .delete-image-btn', function () {
+        const index = $(this).closest('.col-4').index();
+        pendingImages.splice(index, 1);
+        $(this).closest('.col-4').remove();
+    });
+
+    // PRODUCT EDITING
+    // --------------
 
     // Edit product button click
     $(document).on('click', '.edit-product', function () {
@@ -75,34 +169,155 @@
         const productPrice = $(this).data('price');
         const productDescription = $(this).data('description');
         const categoryId = $(this).data('category-id');
-        const imageUrl = $(this).data('image-url');
+
+        resetEditForm();
 
         $('#editProductId').val(productId);
         $('#editProductName').val(productName);
         $('#editProductPrice').val(productPrice);
         $('#editProductDescription').val(productDescription);
         $('#editProductCategory').val(categoryId);
-        $('#editProductImageUrl').val(imageUrl);
+
+        // Load product images
+        loadProductImages(productId);
 
         $('#editProductModal').modal('show');
+    });
+
+    // Handle file selection for edit form
+    $('#editProductImageUpload').on('change', function () {
+        const fileInput = this;
+        if (fileInput.files.length === 0) return;
+
+        // Get current product ID
+        const productId = $('#editProductId').val();
+        if (!productId) {
+            toastr.error("Product ID not available.");
+            return;
+        }
+
+        // Check image count
+        const currentImageCount = $('#editProductImagePreview .col-4').length;
+        const deletedCount = imagesToDelete.length;
+        const newCount = fileInput.files.length;
+        const totalCount = currentImageCount - deletedCount + newCount;
+
+        if (totalCount > 8) {
+            toastr.warning(`You can only add ${8 - currentImageCount + deletedCount} more images (maximum 8 total).`);
+            fileInput.value = '';
+            return;
+        }
+
+        // Upload images immediately for edit form
+        const formData = new FormData();
+        for (let i = 0; i < fileInput.files.length; i++) {
+            formData.append('files', fileInput.files[i]);
+        }
+
+        // Show loading message
+        toastr.info(`Uploading ${newCount} image(s), please wait...`);
+
+        // Upload images
+        $.ajax({
+            url: `/Product/UploadImages?productId=${productId}`,
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (response) {
+                if (response.success) {
+                    // Add all uploaded images to preview
+                    if (response.images) {
+                        response.images.forEach(function (image) {
+                            $('#editProductImagePreview').append(`
+                                <div class="col-4 col-md-3">
+                                    <div class="product-image-container">
+                                        <img src="${image.imageUrl}" class="product-image border" alt="Product Image">
+                                        <div class="delete-image-btn" data-image-id="${image.id}">
+                                            <i class="bi bi-x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            `);
+                        });
+                        toastr.success(`Successfully uploaded ${response.uploadCount} image(s).`);
+                    }
+                } else {
+                    toastr.error("Failed to upload images.");
+                }
+
+                fileInput.value = '';
+            },
+            error: function (xhr) {
+                toastr.error("Error uploading images: " + xhr.responseText);
+                fileInput.value = '';
+            }
+        });
     });
 
     // Edit product form submission
     $('#editProductForm').on('submit', function (e) {
         e.preventDefault();
+
+        // Prepare form data
+        const formData = new FormData(this);
+
+        // Add image IDs to delete
+        imagesToDelete.forEach(function (id) {
+            formData.append('imagesToDelete', id);
+        });
+
         $.ajax({
             url: '/Product/Edit',
             type: "POST",
-            data: $(this).serialize(),
+            data: formData,
+            processData: false,
+            contentType: false,
             success: function () {
                 $('#editProductModal').modal('hide');
+                imagesToDelete = [];
                 toastr.success("Product updated successfully!");
-                loadProducts(); // Reload the products table
+                loadProducts();
             },
             error: function (xhr) {
-                toastr.error("Error while updating product: " + xhr.responseText);
+                toastr.error("Error updating product: " + xhr.responseText);
             }
         });
+    });
+
+    // Delete image in edit form (mark for deletion)
+    $(document).on('click', '#editProductImagePreview .delete-image-btn', function () {
+        const imageId = $(this).data('image-id');
+        const imageContainer = $(this).closest('.col-4');
+
+        // Add to images to delete array
+        imagesToDelete.push(imageId);
+
+        // Update UI
+        imageContainer.addClass('marked-for-deletion');
+        $(this).removeClass('delete-image-btn').addClass('restore-image-btn')
+            .html('<i class="bi bi-arrow-counterclockwise"></i>')
+            .data('image-id', imageId);
+        imageContainer.find('img').css('opacity', '0.5');
+    });
+
+    // Restore image in edit form
+    $(document).on('click', '#editProductImagePreview .restore-image-btn', function () {
+        const imageId = $(this).data('image-id');
+        const imageContainer = $(this).closest('.col-4');
+
+        // Remove from images to delete array
+        const index = imagesToDelete.indexOf(imageId);
+        if (index > -1) {
+            imagesToDelete.splice(index, 1);
+        }
+
+        // Update UI
+        imageContainer.removeClass('marked-for-deletion');
+        $(this).removeClass('restore-image-btn').addClass('delete-image-btn')
+            .html('<i class="bi bi-x"></i>')
+            .data('image-id', imageId);
+        imageContainer.find('img').css('opacity', '1');
     });
 
     // Delete product button click
@@ -120,13 +335,42 @@
             success: function () {
                 $('#deleteProductModal').modal('hide');
                 toastr.success("Product deleted successfully!");
-                loadProducts(); // Reload the products table
+                loadProducts();
             },
             error: function (xhr) {
                 toastr.error("Error while deleting product: " + xhr.responseText);
             }
         });
     });
+
+    // Load product images
+    function loadProductImages(productId) {
+        $.ajax({
+            url: `/Product/GetProductImages?productId=${productId}`,
+            type: 'GET',
+            success: function (images) {
+                $('#editProductImagePreview').empty();
+
+                if (images && images.length > 0) {
+                    images.forEach(function (image) {
+                        $('#editProductImagePreview').append(`
+                            <div class="col-4 col-md-3">
+                                <div class="product-image-container">
+                                    <img src="${image.imageUrl}" class="product-image border" alt="Product Image">
+                                    <div class="delete-image-btn" data-image-id="${image.id}">
+                                        <i class="bi bi-x"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        `);
+                    });
+                }
+            },
+            error: function (xhr) {
+                toastr.error("Error loading product images: " + xhr.responseText);
+            }
+        });
+    }
 
     // Function to load products
     function loadProducts() {
@@ -135,7 +379,6 @@
             type: 'GET',
             dataType: 'json',
             success: function (data) {
-                // Clear existing data and add new data
                 dataTable.clear().rows.add(data).draw();
             },
             error: function (xhr) {
@@ -183,6 +426,20 @@
         $('#productDescription').val('');
         $('#productPrice').val('');
         $('#productCategory').val('');
-        $('#productImageUrl').val('');
+        $('#createProductImageUpload').val('');
+        $('#createProductImagePreview').empty();
+        pendingImages = [];
+    }
+
+    // Reset edit form
+    function resetEditForm() {
+        $('#editProductId').val('');
+        $('#editProductName').val('');
+        $('#editProductPrice').val('');
+        $('#editProductDescription').val('');
+        $('#editProductCategory').val('');
+        $('#editProductImageUpload').val('');
+        $('#editProductImagePreview').empty();
+        imagesToDelete = [];
     }
 });
