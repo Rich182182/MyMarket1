@@ -156,3 +156,149 @@ body {
         background-color: rgba(255, 0, 0, 0.7);
         color: white;
     }
+
+    /* Add these styles to site.css */
+.category-filter {
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+}
+
+.category-filter:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.category-filter.active {
+    border: 1px solid #fff;
+}
+
+.filter-container {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.filter-container h5 {
+    color: #495057;
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 10px;
+}
+
+.form-check-input:checked {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+/* Стили фильтра, соответствующие стилю таблицы */
+.sidebar-filter {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    margin-right: 0;
+}
+
+    .sidebar-filter .card-header {
+        border-bottom: none;
+        padding: 0.75rem 1rem;
+    }
+
+.filter-card-body {
+    padding: 1rem;
+    color: rgba(255, 255, 255, 0.85);
+    background-color: #212529; /* Такой же темный цвет как в таблице */
+}
+
+/* Заголовки секций */
+.filter-heading {
+    color: white !important;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #373b3e;
+}
+
+/* Список категорий */
+.category-list {
+    max-height: 250px;
+    overflow-y: auto;
+    margin-bottom: 0.5rem;
+    scrollbar-color: #495057 #212529;
+    scrollbar-width: thin;
+}
+
+.filter-category-item {
+    display: block;
+    padding: 0.5rem 0.75rem;
+    margin-bottom: 0.5rem;
+    background-color: #2c3034;
+    border-radius: 0.25rem;
+    border-left: 3px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+    .filter-category-item:hover {
+        background-color: #343a40;
+        border-left-color: #495057;
+    }
+
+    .filter-category-item.active {
+        background-color: #343a40;
+        border-left-color: #0d6efd;
+        color: #fff;
+        font-weight: 500;
+    }
+
+/* Опции фильтра скидок */
+.filter-option {
+    background-color: #2c3034;
+    border-radius: 0.25rem;
+    padding: 0.5rem 0.75rem;
+    margin-bottom: 0.5rem;
+    transition: all 0.2s;
+}
+
+    .filter-option:hover {
+        background-color: #343a40;
+    }
+
+    .filter-option .form-check-label {
+        font-size: 0.9rem;
+        cursor: pointer;
+        color: rgba(255, 255, 255, 0.85);
+    }
+
+    .filter-option .form-check-input:checked ~ .form-check-label {
+        color: #fff;
+        font-weight: 500;
+    }
+
+/* Разделители */
+.filter-section hr {
+    margin: 1rem 0;
+    opacity: 0.2;
+    border-color: #495057;
+}
+
+/* Настройка скроллбара */
+.category-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.category-list::-webkit-scrollbar-track {
+    background: #343a40;
+}
+
+.category-list::-webkit-scrollbar-thumb {
+    background: #495057;
+    border-radius: 4px;
+}
+
+/* Адаптивность */
+@media (max-width: 991.98px) {
+    .sidebar-filter {
+        margin-bottom: 1rem;
+    }
+}
+

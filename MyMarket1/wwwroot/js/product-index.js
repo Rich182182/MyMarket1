@@ -1,4 +1,9 @@
 ﻿$(document).ready(function () {
+
+    let activeFilters = {
+        categories: [], // All categories selected by default (empty means all)
+        onSale: null    // null = both, true = on sale only, false = regular price only
+    };
     // Initialize DataTable
     var dataTable = $('#productsTable').DataTable({
         pageLength: 10,
@@ -70,6 +75,210 @@
 
     // Load categories for dropdowns
     loadCategories();
+
+    function applyFilters() {
+        const dataTable = $('#productsTable').DataTable();
+
+        // Custom filter function
+        $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+            const rowData = dataTable.row(dataIndex).data();
+
+            // Category filter
+            if (activeFilters.categories.length > 0 && !activeFilters.categories.includes(rowData.categoryId)) {
+                return false;
+            }
+
+            // Sale status filter
+            if (activeFilters.onSale === true && !rowData.isOnSale) {
+                return false;
+            }
+            if (activeFilters.onSale === false && rowData.isOnSale) {
+                return false;
+            }
+
+            return true;
+        });
+
+        // Redraw the table with filters applied
+        dataTable.draw();
+
+        // Remove the custom filter function after drawing
+        $.fn.dataTable.ext.search.pop();
+    }
+    function adjustFilterHeight() {
+        // Get the product table container height (including header, table, and footer)
+        const productCardHeight = $('.col-lg-9 .card.shadow').outerHeight();
+
+        // Get the filter components heights
+        const filterHeaderHeight = $('.sidebar-filter .card-header').outerHeight();
+        const discountFilterHeight = $('.filter-section:not(.flex-grow-1)').outerHeight();
+        const resetButtonHeight = $('#resetFilters').outerHeight();
+        const hrHeight = $('.filter-card-body hr').outerHeight() * 2;
+        const filterHeadingHeight = $('.filter-heading').first().outerHeight();
+        const padding = 16; // Base padding
+
+        // Calculate available height for category list
+        let availableHeight = productCardHeight - filterHeaderHeight -
+            discountFilterHeight - resetButtonHeight -
+            hrHeight - filterHeadingHeight - padding;
+
+        // Apply a small reduction (1.5%) to make it slightly smaller
+        availableHeight = availableHeight * 0.9;
+
+        // Set the category list height
+        $('.category-list').css({
+            'height': availableHeight + 'px',
+            'max-height': availableHeight + 'px',
+            'min-height': availableHeight + 'px',
+            'overflow-y': 'auto'
+        });
+    }
+
+
+
+    // Adjust height on page load
+    $(document).ready(function () {
+        // Initial adjustment after a short delay to ensure all elements are rendered
+        setTimeout(adjustFilterHeight, 300);
+
+        // Adjust when DataTable page length changes
+        $('#productsTable').on('length.dt', function () {
+            setTimeout(adjustFilterHeight, 100);
+        });
+
+        // Adjust when DataTable page changes
+        $('#productsTable').on('page.dt', function () {
+            setTimeout(adjustFilterHeight, 100);
+        });
+
+        // Adjust when window resizes
+        $(window).resize(function () {
+            setTimeout(adjustFilterHeight, 100);
+        });
+
+        // Listen for DataTable draw event
+        $('#productsTable').on('draw.dt', function () {
+            setTimeout(adjustFilterHeight, 100);
+        });
+    });
+    dataTable.on('draw.dt', function () {
+        setTimeout(adjustFilterHeight, 100);
+    });
+
+    // Initial call to set the correct height
+    $(document).ready(function () {
+        // Call after a short delay to ensure everything is rendered
+        setTimeout(adjustFilterHeight, 300);
+
+        // Also call when the window is resized
+        $(window).resize(function () {
+            setTimeout(adjustFilterHeight, 100);
+        });
+    });
+    // Function to initialize filter UI
+    function initializeFilters() {
+        // Load categories and create filter items
+        $.ajax({
+            url: '/Product/GetCategories',
+            type: 'GET',
+            dataType: 'json',
+            success: function (data) {
+                const $container = $('#categoryFilterContainer');
+                $container.empty();
+
+                // Add "All Categories" item
+                $container.append(`
+                <div class="filter-category-item active" data-category-id="all">
+                    <i class="bi bi-grid-3x3-gap me-2"></i>All Categories
+                </div>
+            `);
+
+                // Add individual category items
+                data.forEach(function (category) {
+                    $container.append(`
+                    <div class="filter-category-item" data-category-id="${category.id}">
+                        <i class="bi bi-folder me-2"></i>${category.name}
+                    </div>
+                `);
+                });
+
+                // Attach click event to category items
+                $('.filter-category-item').on('click', function () {
+                    const $this = $(this);
+                    const categoryId = $this.data('category-id');
+
+                    if (categoryId === 'all') {
+                        // If "All Categories" clicked, activate it and deactivate others
+                        $('.filter-category-item').removeClass('active');
+                        $this.addClass('active');
+                        activeFilters.categories = [];
+                    } else {
+                        // Deactivate "All Categories"
+                        $('.filter-category-item[data-category-id="all"]').removeClass('active');
+
+                        // Toggle current category
+                        if ($this.hasClass('active')) {
+                            $this.removeClass('active');
+                            const index = activeFilters.categories.indexOf(categoryId);
+                            if (index > -1) {
+                                activeFilters.categories.splice(index, 1);
+                            }
+                        } else {
+                            $this.addClass('active');
+                            activeFilters.categories.push(categoryId);
+                        }
+
+                        // If no categories selected, activate "All Categories"
+                        if (activeFilters.categories.length === 0) {
+                            $('.filter-category-item[data-category-id="all"]').addClass('active');
+                        }
+                    }
+
+                    applyFilters();
+                });
+            }
+        });
+
+        // Discount status filter event handlers (now using radio buttons)
+        $('#filterAllProducts').on('change', function () {
+            if ($(this).is(':checked')) {
+                activeFilters.onSale = null;
+                applyFilters();
+            }
+        });
+
+        $('#filterOnSaleProducts').on('change', function () {
+            if ($(this).is(':checked')) {
+                activeFilters.onSale = true;
+                applyFilters();
+            }
+        });
+
+        $('#filterRegularProducts').on('change', function () {
+            if ($(this).is(':checked')) {
+                activeFilters.onSale = false;
+                applyFilters();
+            }
+        });
+
+        // Reset filters button
+        $('#resetFilters').on('click', function () {
+            // Reset category filters
+            $('.filter-category-item').removeClass('active');
+            $('.filter-category-item[data-category-id="all"]').addClass('active');
+            activeFilters.categories = [];
+
+            // Reset discount status filter
+            $('#filterAllProducts').prop('checked', true);
+            activeFilters.onSale = null;
+
+            applyFilters();
+        });
+    }
+
+    // Add a call to initialize filters after the DataTable initialization:
+    // Initialize filters
+    initializeFilters();
 
     $('#removeAllDiscountsBtn').on('click', function () {
         // Show the confirmation modal instead of executing action immediately
