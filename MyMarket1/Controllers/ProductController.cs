@@ -27,24 +27,32 @@ namespace MyMarket1.Controllers
         }
 
         [HttpPost]
-        public IActionResult Create(Product product)
-        {
-            if (ModelState.IsValid)
-            {
-                _db.Products.Add(product);
-                _db.SaveChanges();
-                return Json(new { id = product.Id });
-            }
-            return BadRequest(ModelState);
-        }
-
-        [HttpPost]
         public IActionResult Edit(Product product, [FromForm] List<int>? imagesToDelete = null)
         {
             if (ModelState.IsValid)
             {
                 // First update the product
-                _db.Products.Update(product);
+                var existingProduct = _db.Products.Find(product.Id);
+                if (existingProduct == null)
+                {
+                    return NotFound();
+                }
+
+                existingProduct.Name = product.Name;
+                existingProduct.Description = product.Description;
+                existingProduct.Price = product.Price;
+                existingProduct.CategoryId = product.CategoryId;
+                existingProduct.IsOnSale = product.IsOnSale;
+
+                // Handle discount price based on sale status
+                if (product.IsOnSale)
+                {
+                    existingProduct.DiscountPrice = product.DiscountPrice;
+                }
+                else
+                {
+                    existingProduct.DiscountPrice = null;
+                }
 
                 // Delete images if specified
                 if (imagesToDelete != null && imagesToDelete.Count > 0)
@@ -60,6 +68,25 @@ namespace MyMarket1.Controllers
             }
             return BadRequest(ModelState);
         }
+
+        [HttpPost]
+        public IActionResult Create(Product product)
+        {
+            if (ModelState.IsValid)
+            {
+                // Handle discount price based on sale status
+                if (!product.IsOnSale)
+                {
+                    product.DiscountPrice = null;
+                }
+
+                _db.Products.Add(product);
+                _db.SaveChanges();
+                return Json(new { id = product.Id });
+            }
+            return BadRequest(ModelState);
+        }
+
 
 
         [HttpDelete]
@@ -138,6 +165,9 @@ namespace MyMarket1.Controllers
                     p.Name,
                     p.Price,
                     p.Description,
+                    p.IsOnSale,
+                    p.DiscountPrice,
+                    EffectivePrice = p.IsOnSale && p.DiscountPrice.HasValue ? p.DiscountPrice.Value : p.Price,
                     ImageUrl = p.Images != null && p.Images.Any() ?
                         p.Images.OrderBy(i => i.DisplayOrder).First().ImageUrl : null,
                     CategoryName = p.Category.Name,
@@ -147,6 +177,7 @@ namespace MyMarket1.Controllers
 
             return Json(products);
         }
+
 
         [HttpGet]
         public IActionResult GetCategories()
@@ -319,5 +350,20 @@ namespace MyMarket1.Controllers
                 return Json(new { success = true });
             }
         }
+        [HttpPost]
+        public IActionResult RemoveAllDiscounts()
+        {
+            var productsWithDiscunt = _db.Products.Where(u => u.IsOnSale).ToList();
+            foreach(var product in productsWithDiscunt)
+            {
+                product.IsOnSale = false;
+                product.DiscountPrice = null;
+            }
+            
+            _db.SaveChanges();
+
+            return Ok(new { success = true });
+        }
+
     }
 }

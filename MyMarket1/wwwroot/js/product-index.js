@@ -1,7 +1,6 @@
 ﻿$(document).ready(function () {
     // Initialize DataTable
     var dataTable = $('#productsTable').DataTable({
-        // DataTable configuration (keep your existing config)
         pageLength: 10,
         lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, "all"]],
         "oLanguage": {
@@ -17,22 +16,44 @@
                     return '$' + data;
                 }
             },
+            {
+                data: "isOnSale",
+                render: function (data) {
+                    return data ? '<span class="badge bg-success">Yes</span>' : '<span class="badge bg-secondary">No</span>';
+                }
+            },
+            {
+                data: null,
+                render: function (data) {
+                    if (data.isOnSale && data.discountPrice !== null) {
+                        return '<span class="text-success fw-bold">$' + data.discountPrice + '</span>';
+                    } else {
+                        return '<span class="text-muted">-</span>';
+                    }
+                }
+            },
             { data: "categoryName" },
             {
                 data: null,
+                width: '20%',
                 orderable: false,
                 render: function (data) {
-                    return '<div class="btn-group" role="group">' +
-                        '<button type="button" class="btn btn-warning edit-product" ' +
+                    let buttons = '<div class="btn-group" role="group">';
+
+                    buttons += '<button type="button" class="btn btn-warning edit-product" ' +
                         'data-id="' + data.id + '" data-name="' + data.name + '" ' +
                         'data-price="' + data.price + '" data-description="' + (data.description || '') + '" ' +
-                        'data-category-id="' + data.categoryId + '">' +
-                        '<i class="bi bi-pencil-square me-1"></i>Edit</button>' +
-                        '<button type="button" class="btn btn-danger delete-product" ' +
+                        'data-category-id="' + data.categoryId + '" ' +
+                        'data-is-on-sale="' + data.isOnSale + '" ' +
+                        'data-discount-price="' + (data.discountPrice || '') + '">' +
+                        '<i class="bi bi-pencil-square me-1"></i>Edit</button>';
+
+                    buttons += '<button type="button" class="btn btn-danger delete-product" ' +
                         'data-id="' + data.id + '" data-name="' + data.name + '" ' +
                         'data-bs-toggle="modal" data-bs-target="#deleteProductModal">' +
-                        '<i class="bi bi-trash me-1"></i>Delete</button>' +
-                        '</div>';
+                        '<i class="bi bi-trash me-1"></i>Delete</button>';
+
+                    return buttons;
                 }
             }
         ]
@@ -50,6 +71,27 @@
     // Load categories for dropdowns
     loadCategories();
 
+    $('#removeAllDiscountsBtn').on('click', function () {
+        // Show the confirmation modal instead of executing action immediately
+        $('#removeAllDiscountsModal').modal('show');
+    });
+
+    // Confirm remove all discounts
+    $('#confirmRemoveAllDiscounts').on('click', function () {
+        $.ajax({
+            url: '/Product/RemoveAllDiscounts',
+            type: 'POST',
+            success: function () {
+                $('#removeAllDiscountsModal').modal('hide');
+                toastr.success("All discounts have been removed successfully!");
+                loadProducts(); // Reload the products table
+            },
+            error: function (xhr) {
+                toastr.error("Error removing discounts: " + xhr.responseText);
+            }
+        });
+    });
+
     // PRODUCT CREATION
     // ----------------
 
@@ -57,15 +99,26 @@
     $('#createProductForm').on('submit', function (e) {
         e.preventDefault();
 
-        // Create product first
+        // Create a FormData object instead of using serialize()
+        const formData = new FormData(this);
+
+        // Explicitly handle checkbox value
+        const isOnSale = $('#productIsOnSale').is(':checked');
+        formData.set('IsOnSale', isOnSale);
+
+        // If not on sale, set DiscountPrice to null
+        if (!isOnSale) {
+            formData.set('DiscountPrice', '');
+        }
+
         $.ajax({
             url: '/Product/Create',
             type: "POST",
-            data: $(this).serialize(),
-            dataType: 'json',
+            data: formData,
+            processData: false,
+            contentType: false,
             success: function (response) {
                 const productId = response.id;
-
                 // If there are images, upload them
                 if (pendingImages.length > 0) {
                     uploadPendingImages(productId);
@@ -161,7 +214,28 @@
 
     // PRODUCT EDITING
     // --------------
+    // Toggle discount price field visibility based on sale checkbox
+    $(document).on('change', '#productIsOnSale, #editProductIsOnSale', function () {
+        const isChecked = $(this).prop('checked');
+        $(this).closest('form').find('.discount-price-container').toggle(isChecked);
+    });
 
+    // Remove discount button click
+    $(document).on('click', '.remove-discount', function () {
+        const productId = $(this).data('id');
+
+        $.ajax({
+            url: `/Product/RemoveDiscount?id=${productId}`,
+            type: 'POST',
+            success: function () {
+                toastr.success("Discount removed successfully!");
+                loadProducts(); // Reload the products table
+            },
+            error: function (xhr) {
+                toastr.error("Error removing discount: " + xhr.responseText);
+            }
+        });
+    });
     // Edit product button click
     $(document).on('click', '.edit-product', function () {
         const productId = $(this).data('id');
@@ -169,6 +243,8 @@
         const productPrice = $(this).data('price');
         const productDescription = $(this).data('description');
         const categoryId = $(this).data('category-id');
+        const isOnSale = $(this).data('is-on-sale');
+        const discountPrice = $(this).data('discount-price');
 
         resetEditForm();
 
@@ -177,6 +253,13 @@
         $('#editProductPrice').val(productPrice);
         $('#editProductDescription').val(productDescription);
         $('#editProductCategory').val(categoryId);
+        $('#editProductIsOnSale').prop('checked', isOnSale);
+
+        // Show/hide discount price field based on sale status
+        $('#editProductForm .discount-price-container').toggle(isOnSale);
+        if (isOnSale && discountPrice) {
+            $('#editProductDiscountPrice').val(discountPrice);
+        }
 
         // Load product images
         loadProductImages(productId);
@@ -261,6 +344,15 @@
 
         // Prepare form data
         const formData = new FormData(this);
+
+        // Explicitly handle checkbox value (which may not be included if unchecked)
+        const isOnSale = $('#editProductIsOnSale').is(':checked');
+        formData.set('IsOnSale', isOnSale);
+
+        // If not on sale, set DiscountPrice to null
+        if (!isOnSale) {
+            formData.set('DiscountPrice', '');
+        }
 
         // Add image IDs to delete
         imagesToDelete.forEach(function (id) {
@@ -419,6 +511,9 @@
             }
         });
     }
+    // Remove all discounts button click
+    
+
 
     // Reset create form
     function resetCreateForm() {
@@ -426,6 +521,9 @@
         $('#productDescription').val('');
         $('#productPrice').val('');
         $('#productCategory').val('');
+        $('#productIsOnSale').prop('checked', false);
+        $('#productDiscountPrice').val('');
+        $('.discount-price-container').hide();
         $('#createProductImageUpload').val('');
         $('#createProductImagePreview').empty();
         pendingImages = [];
@@ -438,6 +536,9 @@
         $('#editProductPrice').val('');
         $('#editProductDescription').val('');
         $('#editProductCategory').val('');
+        $('#editProductIsOnSale').prop('checked', false);
+        $('#editProductDiscountPrice').val('');
+        $('.discount-price-container').hide();
         $('#editProductImageUpload').val('');
         $('#editProductImagePreview').empty();
         imagesToDelete = [];
