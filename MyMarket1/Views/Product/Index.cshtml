@@ -286,14 +286,19 @@
     </div>
 </div>
 @section Scripts {
-    <script src="~/js/product-index.js" asp-append-version="true"></script>
+    <!-- Include scripts in the right order -->
+    <script src="~/js/product/product-core.js"></script>
+    <script src="~/js/product/product-datatable.js"></script>
+    <script src="~/js/product/product-filters.js"></script>
+    <script src="~/js/product/product-create.js"></script>
+    <script src="~/js/product/product-edit.js"></script>
+    <script src="~/js/product/product-delete.js"></script>
 
-    
-    
+
+
+
 }
 
-<!-- Keeping your original HTML structure, just adding custom CSS -->
-<!-- Keeping your original HTML structure, just adding custom CSS -->
 
 <style>
     /* Reset container margins and make it full width */
