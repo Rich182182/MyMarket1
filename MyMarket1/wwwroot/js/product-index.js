@@ -106,33 +106,72 @@
         $.fn.dataTable.ext.search.pop();
     }
     function adjustFilterHeight() {
-        // Get the product table container height (including header, table, and footer)
-        const productCardHeight = $('.col-lg-9 .card.shadow').outerHeight();
+        // Calculate the viewport height
+        const viewportHeight = $(window).height();
 
-        // Get the filter components heights
-        const filterHeaderHeight = $('.sidebar-filter .card-header').outerHeight();
-        const discountFilterHeight = $('.filter-section:not(.flex-grow-1)').outerHeight();
+        // Account for the navbar height
+        const navbarHeight = $('header').outerHeight();
+
+        // Calculate available height for the sidebar
+        const availableHeight = viewportHeight - navbarHeight - 20; // 20px buffer
+
+        // Make the sidebar fixed
+        $('.sidebar-filter').css({
+            'position': 'sticky',
+            'top': navbarHeight + 'px',
+            'max-height': availableHeight + 'px',
+            'height': availableHeight + 'px',
+            'overflow': 'hidden',
+            'display': 'flex',
+            'flex-direction': 'column'
+        });
+
+        // Make filter card body a flex container
+        $('.filter-card-body').css({
+            'display': 'flex',
+            'flex-direction': 'column',
+            'overflow-y': 'hidden',
+            'height': 'calc(100% - ' + $('.sidebar-filter .card-header').outerHeight() + 'px)'
+        });
+
+        // Get the heights of all fixed elements in the filter
+        const discountSectionHeight = $('.filter-section:not(.flex-grow-1)').outerHeight();
         const resetButtonHeight = $('#resetFilters').outerHeight();
         const hrHeight = $('.filter-card-body hr').outerHeight() * 2;
         const filterHeadingHeight = $('.filter-heading').first().outerHeight();
-        const padding = 16; // Base padding
+        const padding = 20; // Some padding
+
+        // Ensure the category filter section takes the remaining space
+        $('.filter-section.flex-grow-1').css({
+            'display': 'flex',
+            'flex-direction': 'column',
+            'flex': '1',
+            'overflow': 'hidden',
+            'min-height': '0' // This is important for flex to work properly
+        });
 
         // Calculate available height for category list
-        let availableHeight = productCardHeight - filterHeaderHeight -
-            discountFilterHeight - resetButtonHeight -
-            hrHeight - filterHeadingHeight - padding;
+        const fixedElementsHeight = discountSectionHeight + resetButtonHeight +
+            hrHeight + filterHeadingHeight + padding;
 
-        // Apply a small reduction (1.5%) to make it slightly smaller
-        availableHeight = availableHeight * 0.9;
+        const categoryListHeight = $('.filter-card-body').height() - fixedElementsHeight;
 
-        // Set the category list height
+        // Make only the category list scrollable
         $('.category-list').css({
-            'height': availableHeight + 'px',
-            'max-height': availableHeight + 'px',
-            'min-height': availableHeight + 'px',
-            'overflow-y': 'auto'
+            'height': categoryListHeight + 'px',
+            'max-height': categoryListHeight + 'px',
+            'overflow-y': 'auto',
+            'flex-shrink': '1'
+        });
+
+        // Ensure the reset button is always visible
+        $('#resetFilters').css({
+            'margin-top': 'auto',
+            'flex-shrink': '0'
         });
     }
+
+
 
 
 
