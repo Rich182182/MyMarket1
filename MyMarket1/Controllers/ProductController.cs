@@ -279,26 +279,7 @@ namespace MyMarket1.Controllers
         }
 
 
-        [HttpDelete]
-        public IActionResult DeleteImage(int imageId)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            try
-            {
-                DeleteSingleImage(imageId);
-                _db.SaveChanges();
-                return Ok(new { success = true });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest($"Error deleting image: {ex.Message}");
-            }
-        }
-
+        
         [HttpGet]
         public IActionResult GetProductImages(int productId)
         {
@@ -316,40 +297,7 @@ namespace MyMarket1.Controllers
             return Json(images);
         }
 
-        [HttpPost]
-        public IActionResult SaveProductWithImages(Product product, List<int> imagesToDelete)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            // For new products
-            if (product.Id == 0)
-            {
-                _db.Products.Add(product);
-                _db.SaveChanges();
-                return Json(new { success = true, id = product.Id });
-            }
-            // For existing products
-            else
-            {
-                // Update product
-                _db.Products.Update(product);
-
-                // Delete images if specified
-                if (imagesToDelete != null && imagesToDelete.Count > 0)
-                {
-                    foreach (var imageId in imagesToDelete)
-                    {
-                        DeleteSingleImage(imageId);
-                    }
-                }
-
-                _db.SaveChanges();
-                return Json(new { success = true });
-            }
-        }
+        
         [HttpPost]
         public IActionResult RemoveAllDiscounts()
         {

@@ -15,7 +15,9 @@ let ProductCore = {
             type: 'GET',
             dataType: 'json',
             success: function (data) {
-                ProductCore.dataTable.clear().rows.add(data).draw();
+                if (ProductCore.dataTable) {
+                    ProductCore.dataTable.clear().rows.add(data).draw();
+                }
             },
             error: function (xhr) {
                 toastr.error("Error loading products: " + xhr.responseText);
@@ -36,35 +38,38 @@ let ProductCore = {
                 createDropdown.find('option:not(:first)').remove();
                 editDropdown.find('option:not(:first)').remove();
 
-                // Add new options
-                $.each(data, function (i, category) {
-                    createDropdown.append($('<option>', {
-                        value: category.id,
-                        text: category.name
-                    }));
+                // Add new options - fixed the loop to use proper variable names
+                if (Array.isArray(data)) {
+                    data.forEach(function (category) {
+                        createDropdown.append($('<option>', {
+                            value: category.id,
+                            text: category.name
+                        }));
 
-                    editDropdown.append($('<option>', {
-                        value: category.id,
-                        text: category.name
-                    }));
-                });
+                        editDropdown.append($('<option>', {
+                            value: category.id,
+                            text: category.name
+                        }));
+                    });
+                }
             },
             error: function (xhr) {
                 toastr.error("Error loading categories: " + xhr.responseText);
             }
         });
-    },
-
-    init: function () {
-        // Initialize DataTable and other components will be called from here
-        $(document).ready(function () {
-            // This function will be called when document is ready
-            // Each module will register its initialization function
-        });
     }
+
+    /* init: function () {
+         // Initialize DataTable and other components will be called from here
+         $(document).ready(function () {
+             // This function will be called when document is ready
+             // Each module will register its initialization function
+         });
+     }*/
 };
 
-$(document).ready(function () {
+// Fix for deprecated jQuery ready syntax
+$(function () {
     // Initialize core functionality
     ProductCore.loadCategories();
 });

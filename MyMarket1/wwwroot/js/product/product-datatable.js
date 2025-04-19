@@ -64,22 +64,7 @@ $(document).ready(function () {
     // Load products via AJAX when page loads
     ProductCore.loadProducts();
 
-    // Event handlers for DataTable events
-    ProductCore.dataTable.on('draw.dt', function () {
-        setTimeout(ProductFilters.adjustFilterHeight, 100);
-    });
-
-    $('#productsTable').on('length.dt', function () {
-        setTimeout(ProductFilters.adjustFilterHeight, 100);
-    });
-
-    $('#productsTable').on('page.dt', function () {
-        setTimeout(ProductFilters.adjustFilterHeight, 100);
-    });
-
-    $('#productsTable').on('draw.dt', function () {
-        setTimeout(ProductFilters.adjustFilterHeight, 100);
-    });
+    
 
     // Remove all discounts functionality
     $('#removeAllDiscountsBtn').on('click', function () {

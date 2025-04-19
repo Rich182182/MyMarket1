@@ -6,10 +6,10 @@ let ProductFilters = {
         const viewportHeight = $(window).height();
 
         // Account for the navbar height
-        const navbarHeight = $('header').outerHeight();
+        const navbarHeight = 10;
 
         // Calculate available height for the sidebar
-        const availableHeight = viewportHeight - navbarHeight - 20; // 20px buffer
+        const availableHeight = viewportHeight  - 20;
 
         // Make the sidebar fixed
         $('.sidebar-filter').css({
@@ -48,7 +48,7 @@ let ProductFilters = {
 
         // Calculate available height for category list
         const fixedElementsHeight = discountSectionHeight + resetButtonHeight +
-            hrHeight + filterHeadingHeight + padding;
+            hrHeight + filterHeadingHeight - padding;
 
         const categoryListHeight = $('.filter-card-body').height() - fixedElementsHeight;
 
@@ -202,33 +202,16 @@ $(document).ready(function () {
     ProductFilters.initializeFilters();
 
     // Adjust height on page load
-    setTimeout(ProductFilters.adjustFilterHeight, 300);
+    ProductFilters.adjustFilterHeight();
 
     // Also call when the window is resized
     $(window).resize(function () {
-        setTimeout(ProductFilters.adjustFilterHeight, 100);
+        ProductFilters.adjustFilterHeight();
     });
 
     // Toggle discount price field visibility based on sale checkbox
     $(document).on('change', '#productIsOnSale, #editProductIsOnSale', function () {
         const isChecked = $(this).prop('checked');
         $(this).closest('form').find('.discount-price-container').toggle(isChecked);
-    });
-
-    // Remove discount button click
-    $(document).on('click', '.remove-discount', function () {
-        const productId = $(this).data('id');
-
-        $.ajax({
-            url: `/Product/RemoveDiscount?id=${productId}`,
-            type: 'POST',
-            success: function () {
-                toastr.success("Discount removed successfully!");
-                ProductCore.loadProducts(); // Reload the products table
-            },
-            error: function (xhr) {
-                toastr.error("Error removing discount: " + xhr.responseText);
-            }
-        });
     });
 });

@@ -49,6 +49,9 @@ let ProductEdit = {
 $(document).ready(function () {
     // Edit product button click
     $(document).on('click', '.edit-product', function () {
+
+        $('#editProductModal').modal('show');
+
         const productId = $(this).data('id');
         const productName = $(this).data('name');
         const productPrice = $(this).data('price');
@@ -75,7 +78,7 @@ $(document).ready(function () {
         // Load product images
         ProductEdit.loadProductImages(productId);
 
-        $('#editProductModal').modal('show');
+        
     });
 
     // Handle file selection for edit form
@@ -109,7 +112,7 @@ $(document).ready(function () {
         }
 
         // Show loading message
-        toastr.info(`Uploading ${newCount} image(s), please wait...`);
+        toastr.info(`Uploading ${newCount} image(s)`);
 
         // Upload images
         $.ajax({

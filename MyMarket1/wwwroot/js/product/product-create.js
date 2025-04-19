@@ -30,9 +30,7 @@ let ProductCreate = {
             data: formData,
             processData: false,
             contentType: false,
-            success: function() {
-                ProductCreate.finishCreateProduct();
-            },
+            
             error: function(xhr) {
                 toastr.error("Error uploading images: " + xhr.responseText);
             }
@@ -75,9 +73,9 @@ $(document).ready(function() {
                 // If there are images, upload them
                 if (ProductCreate.pendingImages.length > 0) {
                     ProductCreate.uploadPendingImages(productId);
-                } else {
-                    ProductCreate.finishCreateProduct();
-                }
+                } 
+                ProductCreate.finishCreateProduct();
+
             },
             error: function(xhr) {
                 toastr.error("Error creating product: " + xhr.responseText);

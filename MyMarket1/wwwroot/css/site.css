@@ -302,3 +302,45 @@ body {
     }
 }
 
+@media (min-width: 1800px) {
+    .row-cols-xxxl-5 > * {
+        flex: 0 0 auto;
+        width: 20%;
+    }
+
+    .row-cols-xxxl-7 > * {
+        flex: 0 0 auto;
+        width: 14.285714%;
+    }
+
+    /* И так далее для других количеств колонок */
+}
+/* Стилі для Swiper у модальному вікні */
+.modal .swiper {
+    width: 100%;
+    height: 300px;
+    /*margin-bottom: 20px;*/
+}
+
+.modal .swiper-slide {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+    .modal .swiper-slide img {
+        max-height: 100%;
+        max-width: 100%;
+        object-fit: contain;
+    }
+
+.modal .swiper-button-next,
+.modal .swiper-button-prev {
+    color: #375a7f;
+}
+
+.modal .swiper-pagination-bullet-active {
+    background-color: #375a7f;
+}

@@ -14,6 +14,7 @@ namespace Models
         public int Id { get; set; }
 
         [Required(ErrorMessage = "Product name is required")]
+        [MaxLength(30, ErrorMessage = "Name must be last then 30 characters")]
         public string Name { get; set; }
 
         public string? Description { get; set; }
