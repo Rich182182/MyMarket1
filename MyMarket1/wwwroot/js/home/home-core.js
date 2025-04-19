@@ -1,9 +1,11 @@
 ﻿let HomeCore = {
-    elements = 20,
+
+    elements: 10,
     activeFilters: {
         categories: [],
         onSale: null
     },
+
     loadProducts: function () {
         $.ajax({
             url: '/Home/GetAllProducts',
