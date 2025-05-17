@@ -86,7 +86,7 @@ let ProductFilters = {
     initializeFilters: function () {
         // Load categories and create filter items
         $.ajax({
-            url: '/Product/GetCategories',
+            url: '/Home/GetCategories',
             type: 'GET',
             dataType: 'json',
             success: function (data) {

@@ -9,6 +9,7 @@ using ProductImage = Models.ProductImage;
 
 namespace MyMarket1.Controllers
 {
+    [Area("Customer")]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
@@ -85,6 +86,12 @@ namespace MyMarket1.Controllers
                 productLength = productsLength,
                 executionTime = sw.ElapsedMilliseconds
             });
+        }
+        [HttpGet]
+        public IActionResult GetCategories()
+        {
+            var categories = _db.Categories.Select(c => new { c.Id, c.Name }).ToList();
+            return Json(categories);
         }
         [HttpPost]
         public IActionResult GenerateTestData(int count = 1000)
