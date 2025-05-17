@@ -1,12 +1,25 @@
 ﻿<div class="row mx-0 g-0 w-100">
+    @* <button id="generateTestDataBtn" class="btn btn-primary mb-3">
+        <i class="bi bi-database-fill-add me-1"></i>Generate Test Data
+    </button> *@
     <div class="col-lg-3 py-4 col-md-4 p-0 m-0">
-        <div class="card sidebar-filter border-0  rounded-0 m-0">
+        <div class="card sidebar-filter border-0  rounded-1 m-0">
             <div class="card-header bg-primary  text-white rounded-0">
                 <h4 class="mb-1 fw-bold p-1"><i class="bi bi-funnel-fill me-2"></i>Filter Products</h4>
             </div>
             <div class="card-body filter-card-body bg-dark text-white p-2">
                 <!-- Filter content with flexbox layout -->
                 <div class="filter-section flex-grow-1">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text bg-primary border-0 text-white">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text" id="searchInput"
+                               class="form-control border-0 text-white bg-secondary"
+                               placeholder="Search Products..."
+                               aria-label="Search Products"
+                               style="box-shadow: none; border-radius: 0 4px 4px 0;">
+                    </div>
                     <h5 class="filter-heading text-white">
                         <i class="bi bi-grid-3x3-gap me-2"></i>Categories
                     </h5>
@@ -60,8 +73,11 @@
 
         </div>
     </div>
-    <div class=" col-lg-9 col-md-8 " id="mainList">
+    <div class=" col-lg-9 col-md-8 " >
+        <div id="mainList"></div>
+        <div id="pagination-container" class="d-flex justify-content-center mt-0"></div>
     </div>
+
 </div>
 
 
@@ -142,15 +158,53 @@
 </div>
 
 
-
-
 @section Scripts {
 
     <script src="~/js/home/home-show.js"></script>
     <script src="~/js/home/home-core.js"></script>
     <script src="~/js/home/home-products.js"></script>
     <script src="~/js/home/home-filter.js"></script>
+   @*  <script>
+        $(document).ready(function() {
+            // Обработчик для кнопки генерации тестовых данных
+            $("#generateTestDataBtn").on("click", function() {
+                const count = 1000; // Количество тестовых данных, можно изменить по желанию
 
+                // Показать индикатор загрузки на кнопке
+                const $btn = $(this);
+                const originalText = $btn.html();
+                $btn.html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Generating...');
+                $btn.prop('disabled', true);
+
+                // Выполнить AJAX запрос
+                $.ajax({
+                    url: '/Home/GenerateTestData',
+                    type: 'POST',
+                    data: { count: count },
+                    success: function(response) {
+                        // Восстановить текст кнопки
+                        $btn.html(originalText);
+                        $btn.prop('disabled', false);
+
+                        // Показать уведомление об успехе
+                        alert(`Success! Generated ${count} products in ${response.executionTime}ms`);
+
+                        // Перезагрузить список продуктов
+                        HomeCore.loadProducts(1);
+                    },
+                    error: function(error) {
+                        // Восстановить текст кнопки
+                        $btn.html(originalText);
+                        $btn.prop('disabled', false);
+
+                        // Показать ошибку
+                        alert('Error generating test data: ' + (error.responseJSON?.message || error.statusText));
+                        console.error('Error:', error);
+                    }
+                });
+            });
+        });
+    </script> *@
 }
 <style>
     /* Reset container margins and make it full width */

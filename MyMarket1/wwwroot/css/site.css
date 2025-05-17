@@ -344,3 +344,50 @@ body {
 .modal .swiper-pagination-bullet-active {
     background-color: #375a7f;
 }
+/* Стили для пагинации */
+.pagination-container {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+
+
+.page-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+
+
+.page-btn.ellipsis {
+    background-color: transparent;
+    border-color: transparent;
+    cursor: default;
+}
+
+.page-btn.ellipsis:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+.btn-page-nav {
+    font-size: 18px;
+    padding: 0.2rem 0.5rem;
+}
+
+.btn-load-more {
+    padding: 0.25rem 1rem;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+/* Search input styling */
+#searchInput:focus {
+    box-shadow: none;
+    border: none;
+    outline: none;
+    color: white !important;
+}
+
+#searchInput::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}

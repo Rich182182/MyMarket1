@@ -79,7 +79,8 @@ let ProductFilters = {
     `);
 
         // Call the loadProducts function to load filtered products
-        HomeCore.loadProducts();
+        HomeCore.loadProducts(1);
+        HomeTable.scrollToTop();
     },
 
     initializeFilters: function () {
@@ -107,8 +108,6 @@ let ProductFilters = {
                     </div>
                     `);
                 });
-
-                // Attach click event to category items
                 $('.filter-category-item').on('click', function () {
                     const $this = $(this);
                     const categoryId = $this.data('category-id');
@@ -142,9 +141,13 @@ let ProductFilters = {
 
                     ProductFilters.applyFilters();
                 });
+                // Attach click event to category items
+                
             }
         });
+        
 
+        
         // Discount status filter event handlers (now using radio buttons)
         $('#filterAllProducts').on('change', function () {
             if ($(this).is(':checked')) {
@@ -177,6 +180,8 @@ let ProductFilters = {
             // Reset discount status filter
             $('#filterAllProducts').prop('checked', true);
             HomeCore.activeFilters.onSale = null;
+            HomeCore.activeFilters.search = null;
+            $('#searchInput').val(null);
 
             ProductFilters.applyFilters();
         });
@@ -190,6 +195,14 @@ $(document).ready(function () {
     // Adjust height on page load
     ProductFilters.adjustFilterHeight();
 
+    $('#searchInput').on('keypress', function (e) {
+        if (e.which === 13) {
+            e.preventDefault();
+            HomeCore.activeFilters.search = $(this).val();
+            ProductFilters.applyFilters();
+        }
+
+    });
     // Also call when the window is resized
     $(window).resize(function () {
         ProductFilters.adjustFilterHeight();
