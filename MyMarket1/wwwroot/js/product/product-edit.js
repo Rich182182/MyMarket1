@@ -19,7 +19,7 @@ let ProductEdit = {
 
     loadProductImages: function (productId) {
         $.ajax({
-            url: `/Product/GetProductImages?productId=${productId}`,
+            url: `/Admin/Product/GetProductImages?productId=${productId}`,
             type: 'GET',
             success: function (images) {
                 $('#editProductImagePreview').empty();
@@ -116,7 +116,7 @@ $(document).ready(function () {
 
         // Upload images
         $.ajax({
-            url: `/Product/UploadImages?productId=${productId}`,
+            url: `/Admin/Product/UploadImages?productId=${productId}`,
             type: 'POST',
             data: formData,
             processData: false,
@@ -174,7 +174,7 @@ $(document).ready(function () {
         });
 
         $.ajax({
-            url: '/Product/Edit',
+            url: '/Admin/Product/Edit',
             type: "POST",
             data: formData,
             processData: false,

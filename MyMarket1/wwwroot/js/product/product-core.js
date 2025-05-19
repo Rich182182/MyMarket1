@@ -11,7 +11,7 @@ let ProductCore = {
     // Common functions used across modules
     loadProducts: function () {
         $.ajax({
-            url: '/Product/GetAll',
+            url: '/Admin/Product/GetAll',
             type: 'GET',
             dataType: 'json',
             success: function (data) {
@@ -27,7 +27,7 @@ let ProductCore = {
 
     loadCategories: function () {
         $.ajax({
-            url: '/Product/GetCategories',
+            url: '/Admin/Product/GetCategories',
             type: 'GET',
             dataType: 'json',
             success: function (data) {

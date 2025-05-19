@@ -25,7 +25,7 @@ let ProductCreate = {
         }
 
         $.ajax({
-            url: `/Product/UploadImages?productId=${productId}`,
+            url: `/Admin/Product/UploadImages?productId=${productId}`,
             type: 'POST',
             data: formData,
             processData: false,
@@ -63,7 +63,7 @@ $(document).ready(function() {
         }
 
         $.ajax({
-            url: '/Product/Create',
+            url: '/Admin/Product/Create',
             type: "POST",
             data: formData,
             processData: false,

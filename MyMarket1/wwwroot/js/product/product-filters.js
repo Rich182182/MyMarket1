@@ -35,7 +35,7 @@ let ProductFilters = {
         const resetButtonHeight = $('#resetFilters').outerHeight();
         const hrHeight = $('.filter-card-body hr').outerHeight() * 2;
         const filterHeadingHeight = $('.filter-heading').first().outerHeight();
-        const padding = 20; // Some padding
+        const padding = 10; // Some padding
 
         // Ensure the category filter section takes the remaining space
         $('.filter-section.flex-grow-1').css({
@@ -48,7 +48,7 @@ let ProductFilters = {
 
         // Calculate available height for category list
         const fixedElementsHeight = discountSectionHeight + resetButtonHeight +
-            hrHeight + filterHeadingHeight - padding;
+            hrHeight + filterHeadingHeight - padding ;
 
         const categoryListHeight = $('.filter-card-body').height() - fixedElementsHeight;
 
@@ -99,7 +99,7 @@ let ProductFilters = {
     initializeFilters: function () {
         // Load categories and create filter items
         $.ajax({
-            url: '/Product/GetCategories',
+            url: '/Admin/Product/GetCategories',
             type: 'GET',
             dataType: 'json',
             success: function (data) {

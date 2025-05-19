@@ -159,27 +159,39 @@ namespace MyMarket1.Areas.Admin.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetAll()
-        {
-            var products = _db.Products.Include(p => p.Category)
-                .Include(p => p.Images)
-                .Select(p => new {
-                    p.Id,
-                    p.Name,
-                    p.Price,
-                    p.Description,
-                    p.IsOnSale,
-                    p.DiscountPrice,
-                    EffectivePrice = p.IsOnSale && p.DiscountPrice.HasValue ? p.DiscountPrice.Value : p.Price,
-                    ImageUrl = p.Images != null && p.Images.Any() ?
-                        p.Images.OrderBy(i => i.DisplayOrder).First().ImageUrl : null,
-                    CategoryName = p.Category.Name,
-                    p.CategoryId,
-                    ImageCount = p.Images != null ? p.Images.Count : 0
-                }).ToList();
+public IActionResult GetAll()
+{
+    try
+    {
+        // Разделить запрос на несколько шагов
+        var productsQuery = _db.Products
+            .Include(p => p.Category)
+            .Include(p => p.Images)
+            .AsNoTracking(); // Добавьте это для повышения производительности
+        
+        var products = productsQuery.Select(p => new {
+            p.Id,
+            p.Name,
+            p.Price,
+            p.Description,
+            p.IsOnSale,
+            p.DiscountPrice,
+            EffectivePrice = p.IsOnSale && p.DiscountPrice.HasValue ? p.DiscountPrice.Value : p.Price,
+            ImageUrl = p.Images.OrderByDescending(i => i.DisplayOrder).FirstOrDefault().ImageUrl,
+            CategoryName = p.Category.Name,
+            p.CategoryId,
+            ImageCount = p.Images.Count
+        }).ToList();
+        
+        return Json(products);
+    }
+    catch (Exception ex)
+    {
+        // Логирование ошибки
+        return StatusCode(500, $"Ошибка при загрузке продуктов: {ex.Message}");
+    }
+}
 
-            return Json(products);
-        }
 
 
         [HttpGet]

@@ -1,0 +1,158 @@
+﻿
+@{
+    ViewData["Title"] = "User Management";
+}
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="mb-0 fw-bold"><i class="bi bi-people-fill me-2"></i>Users</h2>
+                <button type="button" class="btn btn-success btn-lg" data-bs-toggle="modal" data-bs-target="#createUserModal">
+                    <i class="bi bi-plus-circle me-2"></i>Create New User
+                </button>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <table id="userTable" class="table table-striped table-hover" style="width:100%">
+            <thead class="thead-dark">
+                <tr >
+                    <th>Email</th>
+                    <th>First Name</th>
+                    <th>Last Name</th>
+                    <th>City</th>
+                    <th>Roles</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+</div>
+
+
+
+
+<div class="modal fade" id="createUserModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title fs-4 fw-bold"><i class="bi bi-plus-circle me-2"></i>Create New User</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="createUserForm" method="post">
+                <div class="modal-body p-3">
+                    <div class="mb-2">
+                        <label for="createUserEmail" class="form-label fs-5">User Email</label>
+                        <input type="text" class="form-control form-control-lg" id="createUserEmail" name="Name" required>
+                    </div>
+                    <div class="mb-2">
+                        <label for="createUserPassword" class="form-label fs-5">User Password</label>
+                        <input type="text" class="form-control form-control-lg" id="createUserPassword" name="Name" required>
+                    </div>
+                    <div class="mb-2">
+                        <label for="createUserFirstName" class="form-label fs-5">User First Name</label>
+                        <input type="text" class="form-control form-control-lg" id="createUserFirstName" name="Name" >
+                    </div>
+                    <div class="mb-2">
+                        <label for="createUserLastName" class="form-label fs-5">User Last Name</label>
+                        <input type="text" class="form-control form-control-lg" id="createUserLastName" name="Name" >
+                    </div>
+                    <div class="mb-2">
+                        <label for="createUserCity" class="form-label fs-5">User City</label>
+                        <select type="text" class="form-control form-control-lg" id="createUserCity" name="Name">
+                            <option disabled selected>-Select City-</option>
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label for="createUserRole" class="form-label fs-5">User Role</label>
+                        <select class="form-select form-select-lg" id="createUserRole" name="Role" required>
+                            <option disabled selected>-Select Role-</option>
+                            <!-- Roles will be populated dynamically -->
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-lg" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-1"></i>Cancel
+                    </button>
+                    <button type="submit" class="btn btn-success btn-lg">
+                        <i class="bi bi-check-circle me-1"></i>Create
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editUserModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title fs-4 fw-bold"><i class="bi bi-pencil-square me-2"></i>Edit Category</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="editUserForm" method="post">
+                <div class="modal-body p-2">
+                    <input type="hidden" id="editUserId" name="Id">
+                    <div class="mb-1">
+                        <label for="editUserName" class="form-label fs-5">User Email</label>
+                        <input type="text" class="form-control form-control-lg" id="editUserEmail" name="Name" disabled>
+                    </div>
+                    <div class="mb-2">
+                        <label for="editUserFirstName" class="form-label fs-5">User First Name</label>
+                        <input type="text" class="form-control form-control-lg" id="editUserFirstName" name="Name">
+                    </div>
+                    <div class="mb-2">
+                        <label for="editUserLastName" class="form-label fs-5">User Last Name</label>
+                        <input type="text" class="form-control form-control-lg" id="editUserLastName" name="Name">
+                    </div>
+                    <div class="mb-2">
+                        <label for="editUserCity" class="form-label fs-5">User City</label>
+                        <select type="text" class="form-select form-select-lg" id="editUserCity" name="Name">
+
+                        </select>
+                    </div>
+                    <div class="mb-1">
+                        <label for="editUserRole" class="form-label fs-5">User Role</label>
+                        <select class="form-select form-select-lg" id="editUserRole" name="Role" required>
+                            <!-- Roles will be populated dynamically -->
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-lg" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-1"></i>Cancel
+                    </button>
+                    <button type="submit" class="btn btn-warning btn-lg">
+                        <i class="bi bi-check-circle me-1"></i>Update
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteUserModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body text-center p-4">
+                <i class="bi bi-x-circle-fill text-danger display-1"></i>
+                <h4 class="mt-3 fw-bold">Delete this user?</h4>
+                <p id="deleteUserName" class="text-muted fs-5"></p>
+                <div class="mt-4">
+                    <button type="button" class="btn btn-secondary btn-lg" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-1"></i>Cancel
+                    </button>
+                    <button type="button" class="btn btn-danger btn-lg" id="confirmDeleteUser">
+                        <i class="bi bi-trash me-1"></i>Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/users/user-index.js"></script>
+}

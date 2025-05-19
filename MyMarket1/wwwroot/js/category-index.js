@@ -104,7 +104,7 @@
     $('#confirmDeleteCategory').on('click', function () {
         const categoryId = $(this).data('id');
         $.ajax({
-            url: '/Category/Delete/' + categoryId,
+            url: '/Admin/Category/Delete/' + categoryId,
             type: "DELETE",
             success: function () {
                 $('#deleteCategoryModal').modal('hide');

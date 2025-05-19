@@ -8,7 +8,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(builder.Configuration
-    .GetConnectionString("DefaultConnection")));
+    .GetConnectionString("DefaultConnection"),
+    sqlServerOptions => sqlServerOptions.CommandTimeout(120)));
 
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
@@ -46,6 +47,22 @@ app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Создаём роли и администратора при первом запуске
+using (var scope = app.Services.CreateScope())
+{
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+
+    // Создаём необходимые роли
+    string[] roles = { "Admin", "Customer" };
+    foreach (var role in roles)
+    {
+        if (!await roleManager.RoleExistsAsync(role))
+            await roleManager.CreateAsync(new IdentityRole(role));
+    }
+}
+
 
 app.MapControllerRoute(
     name: "default",

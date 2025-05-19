@@ -12,8 +12,26 @@
         <form id="profile-form" method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
             <div class="form-floating mb-3">
-                <input asp-for="Username" class="form-control" placeholder="Please choose your username." disabled />
-                <label asp-for="Username" class="form-label"></label>
+                <input asp-for="Email" class="form-control" placeholder="Please choose your username." disabled />
+                <label asp-for="Email" class="form-label"></label>
+            </div>
+            <div class="form-floating mb-3">
+                <input asp-for="Input.FirstName" class="form-control" placeholder="Please enter your phone FirstName." />
+                <label asp-for="Input.FirstName" class="form-label"></label>
+                <span asp-validation-for="Input.FirstName" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3">
+                <input asp-for="Input.LastName" class="form-control" placeholder="Please enter your phone LastName." />
+                <label asp-for="Input.LastName" class="form-label"></label>
+                <span asp-validation-for="Input.LastName" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3">
+                <select asp-for="Input.City" id="citySelect" class="form-select form-control">
+                    <option value="" disabled selected></option>
+                    <!-- Cities will be loaded dynamically -->
+                </select>
+                <label asp-for="Input.City" class="form-label">City</label>
+                <span asp-validation-for="Input.City" class="text-danger"></span>
             </div>
             <div class="form-floating mb-3">
                 <input asp-for="Input.PhoneNumber" class="form-control" placeholder="Please enter your phone number."/>
@@ -27,4 +45,37 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        $(document).ready(function() {
+            const currentCity = '@Model.Input.City';
+
+            // Load cities from API
+            $.ajax({
+                url: '/Customer/Identity/GetAllCities',
+                type: 'GET',
+                dataType: 'json',
+                success: function(response) {
+                    const citySelect = $('#citySelect');
+
+                    if (response && response.data) {
+                        $.each(response.data, function(index, city) {
+                            // Handle both object with name property and direct string
+                            const cityName = typeof city === 'object' ? city.name : city;
+                            const option = $('<option></option>')
+                                .val(cityName)
+                                .text(cityName);
+
+                            // Set the current city as selected
+                            if (cityName === currentCity) {
+                                option.prop('selected', true);
+                            }
+
+                            citySelect.append(option);
+                        });
+                    }
+                }
+            });
+        });
+    </script>
 }

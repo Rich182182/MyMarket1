@@ -11,7 +11,7 @@ $(document).ready(function () {
     $('#confirmDeleteProduct').on('click', function () {
         const productId = $(this).data('id');
         $.ajax({
-            url: '/Product/Delete/' + productId,
+            url: '/Admin/Product/Delete/' + productId,
             type: "DELETE",
             success: function () {
                 $('#deleteProductModal').modal('hide');

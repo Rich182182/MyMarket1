@@ -56,7 +56,7 @@
                 <h5 class="modal-title fs-4 fw-bold"><i class="bi bi-plus-circle me-2"></i>Create New Category</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <form id="createCategoryForm" method="post" asp-controller="Category" asp-action="Create">
+            <form id="createCategoryForm" method="post" asp-area="Admin" asp-controller="Category" asp-action="Create">
                 <div class="modal-body p-4">
                     <div class="mb-3">
                         <label for="categoryName" class="form-label fs-5">Category Name</label>
@@ -84,7 +84,7 @@
                 <h5 class="modal-title fs-4 fw-bold"><i class="bi bi-pencil-square me-2"></i>Edit Category</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form id="editCategoryForm" method="post" asp-controller="Category" asp-action="Edit">
+            <form id="editCategoryForm" method="post" asp-area="Admin" asp-controller="Category" asp-action="Edit">
                 <div class="modal-body p-4">
                     <input type="hidden" id="editCategoryId" name="Id">
                     <div class="mb-3">
